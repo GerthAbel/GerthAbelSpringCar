@@ -17,6 +17,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +31,10 @@ public class CarManagerView extends VerticalLayout {
     private CarEntity selectedmanufacturer;
     private VerticalLayout form;
     private TextField type;
-    private NumberField numberOfDoors;
-    private NumberField yearOfProduction;
+    private TextField numberOfDoors;
+    private TextField yearOfProduction;
     private ComboBox<ManufacturerEntity> manufacturer;
+
     private Binder<CarEntity> binder;
 
     @Autowired
@@ -71,10 +73,17 @@ public class CarManagerView extends VerticalLayout {
         manufacturer.setItems(manufacturerService.findAll());
         manufacturer.setItemLabelGenerator(manufacturerEntity -> manufacturerEntity.getName());
         form.add(new Text("Manufacturer"), manufacturer);
-        numberOfDoors = new NumberField();
-        numberOfDoors.setRequiredIndicatorVisible(true);
+        numberOfDoors = new TextField();
+        binder.forField(numberOfDoors)
+                .withNullRepresentation("")
+                .withConverter(new StringToIntegerConverter("must be integer"))
+                .bind(CarEntity::getNumberOfDoors, CarEntity::setNumberOfDoors);
         form.add(new Text("Number Of Doors"), numberOfDoors);
-        yearOfProduction = new NumberField();
+        yearOfProduction = new TextField();
+        binder.forField(yearOfProduction)
+                .withNullRepresentation("")
+                .withConverter(new StringToIntegerConverter("must be integer"))
+                .bind(CarEntity::getYearOfProduction, CarEntity::setYearOfProduction);
         form.add(new Text("Year Of Production"), yearOfProduction);
 
         Button saveBtn = new Button();
@@ -100,8 +109,10 @@ public class CarManagerView extends VerticalLayout {
         form.add(saveBtn);
         add(form);
         form.setVisible(false);
-
+        binder.bindInstanceFields(this);
     }
+
+
 
 
     private void addButtonBar(Grid<CarEntity> grid) {
